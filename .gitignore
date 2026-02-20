@@ -1,1 +1,8 @@
-gamestate.jsonl__pycache__/
+# build output
+dist/
+build/
+*.spec
+
+# python caches and game data
+gamestate.jsonl
+__pycache__/
