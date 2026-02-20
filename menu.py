@@ -32,11 +32,12 @@ class MenuScreen:
         """]
     
     def __init__(self):
-        self.selected_option = 0  # 0: New Game, 1: Highscores, 2: Exit
-        self.options = ["NEW GAME", "HIGHSCORES", "EXIT"]
+        self.selected_option = 0  # 0: New Game, 1: Debug Mode, 2: Highscores, 3: Exit
+        self.options = ["NEW GAME", "DEBUG MODE", "HIGHSCORES", "EXIT"]
         self.highscore_manager = HighscoreManager()
         self.show_highscores = False
         self.fonts = {}
+        self.button_rects = []  # Store button positions for mouse click detection
     
     def setup_fonts(self):
         """Setup pygame fonts"""
@@ -54,18 +55,34 @@ class MenuScreen:
                     self.show_highscores = False
                     return None
             else:
-                if event.key == pygame.K_UP:
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
                     self.selected_option = (self.selected_option - 1) % len(self.options)
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     self.selected_option = (self.selected_option + 1) % len(self.options)
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                    if self.selected_option == 0:
-                        return "NEW_GAME"
-                    elif self.selected_option == 1:
-                        self.show_highscores = True
-                        return None
-                    elif self.selected_option == 2:
-                        return "EXIT"
+                    return self._get_action_for_option(self.selected_option)
+        
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Handle mouse clicks on menu buttons
+            if not self.show_highscores:
+                for i, rect in enumerate(self.button_rects):
+                    if rect.collidepoint(event.pos):
+                        self.selected_option = i
+                        return self._get_action_for_option(i)
+        
+        return None
+    
+    def _get_action_for_option(self, option_index):
+        """Get the action for a selected option"""
+        if option_index == 0:
+            return "NEW_GAME"
+        elif option_index == 1:
+            return "DEBUG_MODE"
+        elif option_index == 2:
+            self.show_highscores = True
+            return None
+        elif option_index == 3:
+            return "EXIT"
         return None
     
     def draw_spaceship(self, screen):
@@ -93,13 +110,14 @@ class MenuScreen:
         self.draw_spaceship(screen)
         
         # Draw title
-        title = self.fonts['title'].render("BLASTEROIDS", True, (0, 200, 255))
+        title = self.fonts['title'].render("VOIDFALL", True, (0, 200, 255))
         title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 450))
         screen.blit(title, title_rect)
         
         # Draw menu options
         menu_y = 550
         option_spacing = 60
+        self.button_rects = []  # Reset button rects for this frame
         
         for i, option in enumerate(self.options):
             color = (255, 215, 0) if i == self.selected_option else (200, 200, 200)
@@ -114,10 +132,18 @@ class MenuScreen:
                 text = option_font.render(f"  {option}  ", True, color)
             
             text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, menu_y + i * option_spacing))
+            # Add padding to make buttons easier to click
+            button_rect = text_rect.inflate(40, 20)
+            self.button_rects.append(button_rect)
+            
+            # Draw button background/border if selected
+            if i == self.selected_option:
+                pygame.draw.rect(screen, color, button_rect, 3)
+            
             screen.blit(text, text_rect)
         
         # Draw instructions
-        instruction = self.fonts['small'].render("USE ↑↓ TO SELECT | ENTER TO CONFIRM", True, (150, 150, 150))
+        instruction = self.fonts['small'].render("USE W/↑ AND S/↓ TO SELECT | CLICK OR ENTER TO CONFIRM", True, (150, 150, 150))
         instruction_rect = instruction.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40))
         screen.blit(instruction, instruction_rect)
     
@@ -127,6 +153,9 @@ class MenuScreen:
             self.setup_fonts()
         
         screen.fill((10, 10, 20))
+        
+        # Reload scores from file to get the latest ones
+        self.highscore_manager.scores = self.highscore_manager.load_scores()
         
         # Title
         title = self.fonts['title'].render("TOP 10 SCORES", True, (0, 200, 255))

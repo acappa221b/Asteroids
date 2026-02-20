@@ -37,6 +37,12 @@
   },
   {
     "name": "Player",
+    "score": 230,
+    "level": 1,
+    "date": "2026-02-20 13:33:01"
+  },
+  {
+    "name": "Player",
     "score": 130,
     "level": 1,
     "date": "2026-02-11 09:02:56"

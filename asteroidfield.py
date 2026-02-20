@@ -28,14 +28,16 @@ class AsteroidField(pygame.sprite.Sprite):
         ],
     ]
 
-    def __init__(self, player=None):
+    def __init__(self, player=None, debug_mode=False):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.spawn_timer = 0.0
         self.player = player
+        self.debug_mode = debug_mode
 
     def spawn(self, radius, position, velocity):
         asteroid = Asteroid(position.x, position.y, radius)
         asteroid.velocity = velocity
+        return asteroid
 
     def get_spawn_rate(self):
         """Calculate spawn rate based on player level"""
@@ -49,6 +51,10 @@ class AsteroidField(pygame.sprite.Sprite):
         return max(0.2, ASTEROID_SPAWN_RATE_SECONDS * difficulty_multiplier)
 
     def update(self, dt):
+        # Skip automatic spawning in debug mode
+        if self.debug_mode:
+            return
+        
         self.spawn_timer += dt
         spawn_rate = self.get_spawn_rate()
         

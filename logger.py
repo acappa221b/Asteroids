@@ -109,10 +109,13 @@ def log_state():
 
     # New log file on each run
     mode = "w" if not _state_log_initialized else "a"
-    with open("game_state.jsonl", mode) as f:
-        f.write(json.dumps(entry) + "\n")
-
-    _state_log_initialized = True
+    try:
+        with open("game_state.jsonl", mode) as f:
+            f.write(json.dumps(entry) + "\n")
+        _state_log_initialized = True
+    except (PermissionError, IOError):
+        # Silently ignore file permission or I/O errors
+        pass
 
 
 def log_event(event_type, **details):
@@ -129,7 +132,10 @@ def log_event(event_type, **details):
     }
 
     mode = "w" if not _event_log_initialized else "a"
-    with open("game_events.jsonl", mode) as f:
-        f.write(json.dumps(event) + "\n")
-
-    _event_log_initialized = True
+    try:
+        with open("game_events.jsonl", mode) as f:
+            f.write(json.dumps(event) + "\n")
+        _event_log_initialized = True
+    except (PermissionError, IOError):
+        # Silently ignore file permission or I/O errors
+        pass

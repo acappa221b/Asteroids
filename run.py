@@ -203,7 +203,15 @@ def run_game(screen, font_large, font_small, clock):
                             pass
                         elif getattr(shot, 'ricochet_remaining', 0) > 0:
                             shot.ricochet_remaining -= 1
-                            shot.velocity = shot.velocity.rotate(180 + random.uniform(-30,30))
+                            # Calculate ricochet direction: from collision point (shot.position) away from asteroid center (roid.position)
+                            ricochet_dir = (shot.position - roid.position).normalize()
+                            new_shot = Shot(shot.position.x, shot.position.y, owner=shot.owner)
+                            new_shot.velocity = ricochet_dir * shot.velocity.length()
+                            new_shot.ricochet_remaining = shot.ricochet_remaining
+                            new_shot.piercing = shot.piercing
+                            new_shot.pierce_count = getattr(shot, 'pierce_count', 0)
+                            shots.add(new_shot)
+                            shot.kill()
                         else:
                             shot.kill()
         screen.fill("black")

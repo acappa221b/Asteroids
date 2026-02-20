@@ -7,8 +7,10 @@ class Shot(CircleShape):
         super().__init__(x, y, SHOT_RADIUS)
         self.width_multiplier = 1.0
         self.piercing = False
+        self.pierce_count = 0  # Number of targets pierced
         self.ricochet_remaining = 0
         self.owner = owner
+        self.velocity = pygame.Vector2(0, 0)  # Ensure velocity is always present
 
     def draw(self, screen):
         draw_radius = int(self.radius * self.width_multiplier)

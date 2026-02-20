@@ -2,6 +2,7 @@ from circleshape import CircleShape
 from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS
 import pygame
 from shot import Shot
+from laser import Laser
 from perks import PerkSystem, LevelSystem, PerkType
 
 class Player(CircleShape):
@@ -18,6 +19,7 @@ class Player(CircleShape):
         self.laser_cooldown = 0.0
         self.laser_timer = 0.0
         self.drone = None
+        self.lasers_group = None  # Reference to lasers sprite group, set by game
         for group in self.containers:
             group.add(self)
 
@@ -64,7 +66,12 @@ class Player(CircleShape):
         # Laser activation takes precedence
         if self.perk_system.has_laser():
             if self.laser_timer <= 0 and self.laser_cooldown <= 0:
-                # activate laser for 1 second, set 3 second cooldown
+                # Create laser and add to group
+                if self.lasers_group is not None:
+                    direction = pygame.Vector2(0, 1).rotate(self.rotation)
+                    laser = Laser(self.position, direction, owner=self)
+                    self.lasers_group.add(laser)
+                # Set timers: 1 second active, then 3 second cooldown
                 self.laser_timer = 1.0
                 self.laser_cooldown = 3.0
                 return
@@ -76,7 +83,6 @@ class Player(CircleShape):
 
         direction = pygame.Vector2(0, 1).rotate(self.rotation)
         direction = direction * PLAYER_SHOOT_SPEED
-        
         width_multiplier = self.perk_system.get_shot_width_multiplier()
 
         if self.perk_system.should_shoot_double():
